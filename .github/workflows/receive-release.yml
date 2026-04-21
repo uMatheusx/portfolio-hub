@@ -15,27 +15,40 @@ jobs:
           PROJECT="${{ github.event.client_payload.project }}"
           JSON_FILE="projects/${PROJECT}.json"
 
-          # Preserve docs_updated_at if already set
+          # Preserve fields that come from the docs flow
           DOCS_TS=""
+          TAGS="[]"
+          DESCRIPTION=""
           if [ -f "$JSON_FILE" ]; then
             DOCS_TS=$(jq -r '.docs_updated_at // ""' "$JSON_FILE")
+            TAGS=$(jq -r '.tags // []' "$JSON_FILE")
+            DESCRIPTION=$(jq -r '.description // ""' "$JSON_FILE")
           fi
 
-          cat > "$JSON_FILE" << EOF
-          {
-            "name": "${PROJECT}",
-            "display_name": "${{ github.event.client_payload.display_name }}",
-            "description": "${{ github.event.client_payload.description }}",
-            "version": "${{ github.event.client_payload.version }}",
-            "runtime": "${{ github.event.client_payload.runtime }}",
-            "tags": ${{ toJson(github.event.client_payload.tags) || '[]' }},
-            "api_endpoint": "${{ github.event.client_payload.api_endpoint }}",
-            "repo_url": "${{ github.event.client_payload.repo_url }}",
-            "region": "${{ github.event.client_payload.region || 'sa-east-1' }}",
-            "docs_updated_at": "${DOCS_TS}",
-            "changelog_updated_at": "${{ github.event.client_payload.updated_at }}"
-          }
-          EOF
+          # display_name and description from dispatch take priority if provided
+          DISPLAY_NAME="${{ github.event.client_payload.display_name }}"
+          NEW_DESC="${{ github.event.client_payload.description }}"
+          [ -n "$NEW_DESC" ] && DESCRIPTION="$NEW_DESC"
+
+          jq -n \
+            --arg name "$PROJECT" \
+            --arg display_name "$DISPLAY_NAME" \
+            --arg description "$DESCRIPTION" \
+            --arg version "${{ github.event.client_payload.version }}" \
+            --arg repo_url "${{ github.event.client_payload.repo_url }}" \
+            --arg docs_ts "$DOCS_TS" \
+            --arg changelog_ts "${{ github.event.client_payload.updated_at }}" \
+            --argjson tags "$TAGS" \
+            '{
+              name: $name,
+              display_name: $display_name,
+              description: $description,
+              version: $version,
+              tags: $tags,
+              repo_url: $repo_url,
+              docs_updated_at: $docs_ts,
+              changelog_updated_at: $changelog_ts
+            }' > "$JSON_FILE"
 
       - name: Fetch CHANGELOG.md from project repo
         run: |

@@ -1,139 +1,136 @@
 # Arquitetura
 
-## Visão Geral do Sistema
+## Visão Geral
+
+O portfolio-hub é um **agregador de documentação e changelogs**. Cada projeto mantém suas próprias docs — o hub centraliza tudo e publica um site estático no GitHub Pages.
 
 ```mermaid
 flowchart TB
-    subgraph GH["GitHub Ecosystem"]
-        PR(["Repos de Projeto\nrepo-a · repo-b"])
-        CI["GitHub Actions CI\ndisparado por git tag"]
-        HUB["portfolio-hub\nsource of truth"]
-        PAGES["GitHub Pages\nsite estático"]
-
-        PR -->|"git tag v*.*.*"| CI
-        CI -->|"repository_dispatch\nnew-release"| HUB
-        HUB -->|"push → rebuild Astro"| PAGES
-        PR -->|"push em docs/"| DOCWF["GitHub Actions\nDocs Workflow"]
-        DOCWF -->|"repository_dispatch\nupdate-docs"| HUB
+    subgraph Projetos["Repositórios de Projeto"]
+        PA["repo-projeto-a"]
+        PB["repo-projeto-b"]
+        PN["repo-projeto-n"]
     end
 
-    subgraph AWS
-        APIGW["API Gateway\nREST endpoint"]
-        LAMBDA["Lambda Functions\nNode · Python · Go"]
-        S3[("S3\nprojects.json")]
-        CW["CloudWatch\nlogs + métricas"]
-
-        APIGW --> LAMBDA
-        LAMBDA --> CW
+    subgraph Hub["portfolio-hub"]
+        RD["receive-docs.yml"]
+        RR["receive-release.yml"]
+        DEPLOY["deploy.yml"]
+        DATA[("projects/*.json\ndocs/\nchangelogs/")]
     end
 
-    CI -->|"sam deploy"| LAMBDA
-    HUB -->|"upload JSON"| S3
-    PAGES -->|"fetch /health\nem runtime"| APIGW
+    PAGES["GitHub Pages\nhttps://usuario.github.io/portfolio-hub"]
+
+    PA -->|"push em docs/\nupdate-docs"| RD
+    PB -->|"push em docs/"| RD
+    PN -->|"push em docs/"| RD
+
+    PA -->|"git tag v*\nnew-release"| RR
+    PB -->|"git tag v*"| RR
+
+    RD --> DATA
+    RR --> DATA
+    DATA -->|"push na main"| DEPLOY
+    DEPLOY --> PAGES
 ```
 
 ## Dois Fluxos Independentes
 
-O coração do design é a separação entre **documentação** (iterativa) e **changelog** (marco formal):
-
 ```mermaid
 flowchart LR
-    subgraph F1["Fluxo 1 — Docs  (~1 min)"]
-        A1["git push\nem docs/"] --> B1["Actions: docs.yml"]
-        B1 --> C1["dispatch:\nupdate-docs"]
-        C1 --> D1["portfolio-hub\natualiza docs/"]
-        D1 --> E1["Pages reconstruído\n✓ Docs atualizados"]
+    subgraph F1["Fluxo 1 — Documentação  (~1 min)"]
+        direction TB
+        A1["git push\n(alteração em docs/)"] --> B1["docs.yml\ndispatch: update-docs"]
+        B1 --> C1["receive-docs.yml\nfetch + salva docs/"]
+        C1 --> D1["deploy.yml\nrebuilda Astro"]
+        D1 --> E1["GitHub Pages ✓\ndocs atualizadas"]
     end
 
-    subgraph F2["Fluxo 2 — Release  (~2 min)"]
-        A2["git tag v1.0.0"] --> B2["Actions: release.yml"]
-        B2 --> C2a["sam deploy\n→ Lambda"]
-        B2 --> C2b["dispatch:\nnew-release"]
-        C2b --> D2["portfolio-hub\natualiza changelog"]
-        D2 --> E2["Pages reconstruído\n✓ Changelog + Lambda live"]
+    subgraph F2["Fluxo 2 — Changelog  (~1 min)"]
+        direction TB
+        A2["git tag v1.0.0"] --> B2["release.yml\ndispatch: new-release"]
+        B2 --> C2["receive-release.yml\nfetch CHANGELOG.md"]
+        C2 --> D2["deploy.yml\nrebuilda Astro"]
+        D2 --> E2["GitHub Pages ✓\nchangelog atualizado"]
     end
 ```
 
-## Fluxo Completo de uma Release
+## O que o Hub Sabe sobre os Projetos
+
+O hub armazena apenas o necessário para exibir o portfolio. Não tem opinião sobre como o projeto roda.
+
+```mermaid
+classDiagram
+    class Project {
+        +string name
+        +string display_name
+        +string description
+        +string version
+        +string[] tags
+        +string repo_url
+        +datetime docs_updated_at
+        +datetime changelog_updated_at
+    }
+
+    class DocsFolder {
+        +README.md
+        +architecture.md
+        +usage.md
+        +api.md
+    }
+
+    class Changelog {
+        +CHANGELOG.md
+    }
+
+    Project "1" --> "1" DocsFolder : docs/projeto/
+    Project "1" --> "1" Changelog : changelogs/projeto.md
+```
+
+## Sequência Completa de uma Atualização de Docs
 
 ```mermaid
 sequenceDiagram
     actor Dev as Developer
-    participant CI as GitHub Actions CI
+    participant Repo as repo-meu-projeto
     participant Hub as portfolio-hub
-    participant Lambda as AWS Lambda
     participant Pages as GitHub Pages
 
-    Dev->>CI: git tag v2.0.0 && git push --tags
-    activate CI
-    CI->>CI: checkout + build + test
-    CI->>Lambda: sam deploy (update function code)
-    Lambda-->>CI: deployed ✓
-    CI->>Hub: repository_dispatch: new-release
-    deactivate CI
+    Dev->>Repo: git push (docs/architecture.md)
+    activate Repo
+    Repo->>Repo: docs.yml detecta mudança em docs/
+    Repo->>Hub: repository_dispatch: update-docs
+    deactivate Repo
 
     activate Hub
-    Hub->>Hub: update projects/meu-projeto.json
-    Hub->>Hub: fetch + save CHANGELOG.md
+    Hub->>Repo: fetch docs/architecture.md via API
+    Repo-->>Hub: conteúdo do arquivo
+    Hub->>Hub: salva em docs/meu-projeto/architecture.md
+    Hub->>Hub: atualiza docs_updated_at no JSON
     Hub->>Hub: git commit + push
     deactivate Hub
 
     activate Pages
-    Pages->>Pages: npm run build (Astro)
-    Pages->>Pages: deploy to gh-pages
+    Pages->>Pages: deploy.yml rebuild Astro
+    Pages->>Pages: publica site atualizado
     deactivate Pages
 
-    Note over Pages,Lambda: Visitor acessa o portfolio
-    Pages->>Lambda: fetch /health (runtime check)
-    Lambda-->>Pages: { status: ok, version: 2.0.0, latency: 142ms }
+    Note over Dev,Pages: ~1 minuto do push ao portfolio publicado
 ```
 
-## Componentes Detalhados
+## Decisões de Design
 
-### GitHub Ecosystem
+### O hub não faz deploy de projetos
 
-| Componente | Função |
-|---|---|
-| `repo-projeto-*` | Código-fonte com workflows `docs.yml` e `release.yml` |
-| `portfolio-hub` | Repositório central: agrega JSONs, docs e changelogs |
-| GitHub Actions CI | Disparado por tag: build, test, empacota e deploya Lambda |
-| GitHub Actions Deploy | Disparado por push no hub: reconstrói Astro e publica no Pages |
-| GitHub Pages | Serve o portfolio estático com HTTPS |
+Cada projeto tem seu ciclo de vida próprio. O `release.yml` no projeto notifica o hub, mas o deploy do projeto para qualquer infraestrutura (Lambda, ECS, Kubernetes, VPS) é responsabilidade exclusiva do repo do projeto.
 
-### AWS
+### Por que dois eventos separados?
 
-| Serviço | Função |
-|---|---|
-| **API Gateway** | Endpoint REST público por projeto |
-| **Lambda** | Executa o código — cobra apenas por invocação |
-| **S3** | Armazena `projects.json` consolidado |
-| **CloudWatch** | Logs, métricas e alertas das Lambdas |
-| **IAM + OIDC** | Autenticação sem chaves estáticas |
+| | `update-docs` | `new-release` |
+|---|---|---|
+| **Cadência** | Contínua, iterativa | Formal, versionada |
+| **Gatilho** | Push em `docs/` | `git tag` |
+| **O que atualiza** | `docs/projeto/` | `changelogs/projeto.md` + versão no JSON |
+| **Cria versão nova?** | Não | Sim |
 
-## Decisões de Design (ADRs)
-
-### ADR-001: GitHub Pages em vez de S3 Static Hosting
-
-**Decisão:** GitHub Pages para hosting.
-
-**Motivo:** Zero custo, HTTPS automático, integração nativa com Actions. S3 + CloudFront adicionaria R$ 10–30/mês sem benefício real.
-
-### ADR-002: Lambda em vez de ECS Fargate
-
-**Decisão:** Lambda functions.
-
-**Motivo:** Portfolio tem tráfego intermitente (zero na maioria do tempo). Fargate cobra por hora mesmo sem tráfego. Lambda: free tier de 1 milhão de invocações/mês.
-
-**Trade-off:** Cold start de 200–800ms. Aceitável para demonstrações.
-
-### ADR-005: OIDC em vez de chaves estáticas na AWS
-
-**Decisão:** OpenID Connect para autenticação do GitHub Actions.
-
-**Motivo:** Chaves estáticas podem vazar em logs ou forks. OIDC usa tokens temporários por execução.
-
-### ADR-006: Dois fluxos independentes
-
-**Decisão:** Eventos `update-docs` e `new-release` separados.
-
-**Motivo:** Documentação e releases têm cadências completamente diferentes. Misturar os dois force-acoplaria a qualidade da documentação ao ritmo de releases.
+Separar os dois evita que uma melhoria de documentação precise criar uma release, e que uma release precise ter documentação perfeita.
