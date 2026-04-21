@@ -16,7 +16,7 @@ flowchart TB
         RD["receive-docs.yml"]
         RR["receive-release.yml"]
         DEPLOY["deploy.yml"]
-        DATA[("projects · docs · changelogs")]
+        DATA[("projects - docs - changelogs")]
     end
 
     PAGES["GitHub Pages"]
@@ -82,8 +82,8 @@ classDiagram
         +string content
     }
 
-    Project --> DocsFolder : docs/projeto/
-    Project --> Changelog : changelogs/projeto.md
+    Project --> DocsFolder : docs
+    Project --> Changelog : changelogs
 ```
 
 ## Sequência Completa de uma Atualização de Docs
