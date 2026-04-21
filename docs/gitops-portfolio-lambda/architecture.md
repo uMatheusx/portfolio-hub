@@ -16,16 +16,16 @@ flowchart TB
         RD["receive-docs.yml"]
         RR["receive-release.yml"]
         DEPLOY["deploy.yml"]
-        DATA[("projects/*.json\ndocs/\nchangelogs/")]
+        DATA[("projects · docs · changelogs")]
     end
 
-    PAGES["GitHub Pages\nhttps://usuario.github.io/portfolio-hub"]
+    PAGES["GitHub Pages"]
 
-    PA -->|"push em docs/\nupdate-docs"| RD
+    PA -->|"push em docs/"| RD
     PB -->|"push em docs/"| RD
     PN -->|"push em docs/"| RD
 
-    PA -->|"git tag v*\nnew-release"| RR
+    PA -->|"git tag v*"| RR
     PB -->|"git tag v*"| RR
 
     RD --> DATA
@@ -36,28 +36,27 @@ flowchart TB
 
 ## Dois Fluxos Independentes
 
+**Fluxo 1 — Documentação** (~1 min):
+
 ```mermaid
 flowchart LR
-    subgraph F1["Fluxo 1 — Documentação  (~1 min)"]
-        direction TB
-        A1["git push\n(alteração em docs/)"] --> B1["docs.yml\ndispatch: update-docs"]
-        B1 --> C1["receive-docs.yml\nfetch + salva docs/"]
-        C1 --> D1["deploy.yml\nrebuilda Astro"]
-        D1 --> E1["GitHub Pages ✓\ndocs atualizadas"]
-    end
-
-    subgraph F2["Fluxo 2 — Changelog  (~1 min)"]
-        direction TB
-        A2["git tag v1.0.0"] --> B2["release.yml\ndispatch: new-release"]
-        B2 --> C2["receive-release.yml\nfetch CHANGELOG.md"]
-        C2 --> D2["deploy.yml\nrebuilda Astro"]
-        D2 --> E2["GitHub Pages ✓\nchangelog atualizado"]
-    end
+    A1["git push em docs/"] --> B1["docs.yml"]
+    B1 -->|"dispatch: update-docs"| C1["receive-docs.yml"]
+    C1 --> D1["deploy.yml"]
+    D1 --> E1["GitHub Pages atualizado"]
 ```
 
-## O que o Hub Sabe sobre os Projetos
+**Fluxo 2 — Changelog** (~1 min):
 
-O hub armazena apenas o necessário para exibir o portfolio. Não tem opinião sobre como o projeto roda.
+```mermaid
+flowchart LR
+    A2["git tag v1.0.0"] --> B2["release.yml"]
+    B2 -->|"dispatch: new-release"| C2["receive-release.yml"]
+    C2 --> D2["deploy.yml"]
+    D2 --> E2["GitHub Pages atualizado"]
+```
+
+## O que o Hub Armazena por Projeto
 
 ```mermaid
 classDiagram
@@ -66,25 +65,25 @@ classDiagram
         +string display_name
         +string description
         +string version
-        +string[] tags
+        +string tags
         +string repo_url
-        +datetime docs_updated_at
-        +datetime changelog_updated_at
+        +string docs_updated_at
+        +string changelog_updated_at
     }
 
     class DocsFolder {
-        +README.md
-        +architecture.md
-        +usage.md
-        +api.md
+        +string README
+        +string architecture
+        +string usage
+        +string api
     }
 
     class Changelog {
-        +CHANGELOG.md
+        +string content
     }
 
-    Project "1" --> "1" DocsFolder : docs/projeto/
-    Project "1" --> "1" Changelog : changelogs/projeto.md
+    Project --> DocsFolder : docs/projeto/
+    Project --> Changelog : changelogs/projeto.md
 ```
 
 ## Sequência Completa de uma Atualização de Docs
@@ -96,18 +95,18 @@ sequenceDiagram
     participant Hub as portfolio-hub
     participant Pages as GitHub Pages
 
-    Dev->>Repo: git push (docs/architecture.md)
+    Dev->>Repo: git push em docs/architecture.md
     activate Repo
-    Repo->>Repo: docs.yml detecta mudança em docs/
+    Repo->>Repo: docs.yml detecta mudanca em docs/
     Repo->>Hub: repository_dispatch: update-docs
     deactivate Repo
 
     activate Hub
-    Hub->>Repo: fetch docs/architecture.md via API
-    Repo-->>Hub: conteúdo do arquivo
-    Hub->>Hub: salva em docs/meu-projeto/architecture.md
+    Hub->>Repo: fetch docs/ via GitHub API
+    Repo-->>Hub: conteudo dos arquivos
+    Hub->>Hub: salva em docs/meu-projeto/
     Hub->>Hub: atualiza docs_updated_at no JSON
-    Hub->>Hub: git commit + push
+    Hub->>Hub: git commit e push
     deactivate Hub
 
     activate Pages
@@ -115,7 +114,7 @@ sequenceDiagram
     Pages->>Pages: publica site atualizado
     deactivate Pages
 
-    Note over Dev,Pages: ~1 minuto do push ao portfolio publicado
+    Note over Dev,Pages: cerca de 1 minuto do push ao portfolio publicado
 ```
 
 ## Decisões de Design

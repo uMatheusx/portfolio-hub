@@ -38,6 +38,7 @@ const project: Project = JSON.parse(
 // --- Docs ---
 type DocFile = { id: string; label: string; html: string };
 
+// Well-known labels for common filenames
 const DOC_LABELS: Record<string, string> = {
   README: 'Visão Geral',
   architecture: 'Arquitetura',
@@ -45,7 +46,21 @@ const DOC_LABELS: Record<string, string> = {
   api: 'API Reference',
 };
 
+// Well-known files without numeric prefix get this order
 const DOC_ORDER = ['README', 'architecture', 'usage', 'api'];
+
+// Strips numeric prefix and converts to Title Case
+// "01-getting-started" → "Getting Started"
+// "faq"               → "FAQ" (all-caps shorthand)
+const ALL_CAPS = new Set(['api', 'faq', 'sdk', 'cli', 'iam', 'sql', 'ci', 'cd']);
+function toLabel(filename: string): string {
+  const id = filename.replace(/^\d+-/, '');
+  if (DOC_LABELS[id]) return DOC_LABELS[id];
+  if (ALL_CAPS.has(id.toLowerCase())) return id.toUpperCase();
+  return id
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
 
 let docs: DocFile[] = [];
 const docsDir = join(process.cwd(), 'docs', slug);
@@ -53,16 +68,25 @@ if (existsSync(docsDir)) {
   const files = readdirSync(docsDir)
     .filter(f => f.endsWith('.md'))
     .sort((a, b) => {
-      const ai = DOC_ORDER.indexOf(a.replace('.md', ''));
-      const bi = DOC_ORDER.indexOf(b.replace('.md', ''));
-      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+      const aBase = a.replace('.md', '');
+      const bBase = b.replace('.md', '');
+      // Files with numeric prefix (e.g. "01-intro.md") sort by that number first
+      const aNum = parseInt(aBase.match(/^(\d+)/)?.[1] ?? '');
+      const bNum = parseInt(bBase.match(/^(\d+)/)?.[1] ?? '');
+      if (!isNaN(aNum) || !isNaN(bNum)) {
+        return (isNaN(aNum) ? 999 : aNum) - (isNaN(bNum) ? 999 : bNum);
+      }
+      // Otherwise use well-known order, then alphabetical
+      const aOrd = DOC_ORDER.indexOf(aBase);
+      const bOrd = DOC_ORDER.indexOf(bBase);
+      if (aOrd !== bOrd) return (aOrd === -1 ? 999 : aOrd) - (bOrd === -1 ? 999 : bOrd);
+      return aBase.localeCompare(bBase);
     });
 
   docs = files.map(f => {
     const id = f.replace('.md', '');
     const raw = readFileSync(join(docsDir, f), 'utf-8');
-    const label = DOC_LABELS[id] ?? (id.charAt(0).toUpperCase() + id.slice(1).replace(/[-_]/g, ' '));
-    return { id, label, html: String(marked.parse(raw)) };
+    return { id, label: toLabel(id), html: String(marked.parse(raw)) };
   });
 }
 
