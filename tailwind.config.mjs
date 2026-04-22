@@ -13,6 +13,8 @@ export default {
           css: {
             '--tw-prose-body':        '#9898b8',
             '--tw-prose-headings':    '#f0f0fa',
+            'font-family': 'var(--font-body)',
+            'h1, h2, h3, h4, h5, h6': { 'font-family': 'var(--font-body)', 'font-weight': '600', 'line-height': '1.5' },
             '--tw-prose-links':       'oklch(65% 0.28 268)',
             '--tw-prose-bold':        '#f0f0fa',
             '--tw-prose-counters':    '#55557a',

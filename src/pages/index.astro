@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import BlogCard from '../components/BlogCard.astro';
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { SITE_CONFIG } from '../config';
@@ -15,6 +16,47 @@ type Project = {
   docs_updated_at?: string;
   changelog_updated_at?: string;
 };
+
+function parseFrontmatter(raw: string): Record<string, string | string[]> {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return {};
+  const yaml = match[1];
+  const result: Record<string, string | string[]> = {};
+  for (const line of yaml.split('\n')) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) continue;
+    const key = line.slice(0, colonIdx).trim();
+    const val = line.slice(colonIdx + 1).trim();
+    if (val.startsWith('[')) {
+      result[key] = val.slice(1, -1).split(',').map((s: string) => s.trim().replace(/^["']|["']$/g, ''));
+    } else {
+      result[key] = val.replace(/^["']|["']$/g, '');
+    }
+  }
+  return result;
+}
+
+type BlogPost = { slug: string; title: string; description?: string; date: string; tags?: string[] };
+
+let recentPosts: BlogPost[] = [];
+try {
+  const blogDir = join(process.cwd(), 'content', 'blog');
+  recentPosts = readdirSync(blogDir)
+    .filter((f: string) => f.endsWith('.md'))
+    .map((f: string) => {
+      const raw = readFileSync(join(blogDir, f), 'utf-8');
+      const fm = parseFrontmatter(raw);
+      return {
+        slug: f.replace('.md', ''),
+        title: String(fm.title || f.replace('.md', '')),
+        description: fm.description ? String(fm.description) : undefined,
+        date: String(fm.date || ''),
+        tags: Array.isArray(fm.tags) ? fm.tags : [],
+      };
+    })
+    .sort((a: BlogPost, b: BlogPost) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+} catch {}
 
 let projects: Project[] = [];
 try {
@@ -45,10 +87,13 @@ function relativeTime(iso: string | undefined): string {
   <nav id="main-nav">
     <div class="nav-inner">
       <a href={`${base}/`} class="nav-logo">
-        <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-          <path d="M24 4 L42 14 L42 34 L24 44 L6 34 L6 14 Z" stroke="var(--accent)" stroke-width="2"/>
-          <path d="M15 32 L15 17 L24 27 L33 17 L33 32" stroke="#f0f0fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="24" cy="36" r="2" fill="var(--accent)"/>
+        <svg width="26" height="22" viewBox="0 0 40 32" fill="none">
+          <line x1="4" y1="28" x2="4" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="20" y2="22" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="4" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="36" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="22" x2="36" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="8" x2="36" y2="28" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
         <div>
           <div class="logo-name">matheus</div>
@@ -58,6 +103,8 @@ function relativeTime(iso: string | undefined): string {
       <div class="nav-links">
         <a href="#projects" class="nav-link">Projetos</a>
         <a href="#about" class="nav-link">Sobre</a>
+        <a href="#experience" class="nav-link">Experiência</a>
+        <a href={`${base}/blog`} class="nav-link">Blog</a>
         <a href={`https://github.com/${SITE_CONFIG.githubUser}`} target="_blank" rel="noopener" class="nav-cta">
           <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
           GitHub
@@ -208,14 +255,114 @@ function relativeTime(iso: string | undefined): string {
     </div>
   </section>
 
+  <!-- ── EXPERIENCE ─────────────────────────────────────────── -->
+  <section id="experience" class="section-experience">
+    <div class="section-header">
+      <div>
+        <div class="section-overline">Experiência</div>
+        <h2 class="section-h2">Jornada profissional</h2>
+      </div>
+    </div>
+    <div class="exp-list">
+      <div class="exp-card-h">
+        <div class="exp-bar"></div>
+        <div class="exp-content">
+          <div class="exp-top">
+            <div>
+              <div class="exp-title">Senior Software Engineer</div>
+              <div class="exp-company">Empresa Atual</div>
+            </div>
+            <div class="exp-period">2023 — Presente</div>
+          </div>
+          <p class="exp-text">
+            Liderança técnica em projetos críticos de infraestrutura, arquitetura de sistemas distribuídos e mentoria de equipe.
+          </p>
+          <div class="exp-tags">
+            <span class="exp-tag">Go</span>
+            <span class="exp-tag">Kubernetes</span>
+            <span class="exp-tag">AWS</span>
+            <span class="exp-tag">Terraform</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-card-h">
+        <div class="exp-bar"></div>
+        <div class="exp-content">
+          <div class="exp-top">
+            <div>
+              <div class="exp-title">Software Engineer</div>
+              <div class="exp-company">Empresa Anterior</div>
+            </div>
+            <div class="exp-period">2021 — 2023</div>
+          </div>
+          <p class="exp-text">
+            Desenvolvimento de APIs escaláveis, otimização de performance e implementação de observabilidade com OpenTelemetry.
+          </p>
+          <div class="exp-tags">
+            <span class="exp-tag">TypeScript</span>
+            <span class="exp-tag">PostgreSQL</span>
+            <span class="exp-tag">Docker</span>
+            <span class="exp-tag">OpenTelemetry</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-card-h">
+        <div class="exp-bar"></div>
+        <div class="exp-content">
+          <div class="exp-top">
+            <div>
+              <div class="exp-title">Junior Developer</div>
+              <div class="exp-company">Primeira Empresa</div>
+            </div>
+            <div class="exp-period">2020 — 2021</div>
+          </div>
+          <p class="exp-text">
+            Início da carreira em desenvolvimento web, aprendizado de boas práticas e primeiros projetos em produção.
+          </p>
+          <div class="exp-tags">
+            <span class="exp-tag">JavaScript</span>
+            <span class="exp-tag">React</span>
+            <span class="exp-tag">Node.js</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BLOG ──────────────────────────────────────────────── -->
+  {recentPosts.length > 0 && (
+    <section id="blog" class="section-blog">
+      <div class="section-header">
+        <div>
+          <div class="section-overline">Blog</div>
+          <h2 class="section-h2">Últimos posts</h2>
+        </div>
+        <a href={`${base}/blog`} class="view-all-link">
+          Ver todos
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="blog-grid">
+        {recentPosts.map(post => (
+          <BlogCard post={post} />
+        ))}
+      </div>
+    </section>
+  )}
+
   <!-- ── FOOTER ────────────────────────────────────────────── -->
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
-          <path d="M24 4 L42 14 L42 34 L24 44 L6 34 L6 14 Z" stroke="var(--accent)" stroke-width="2"/>
-          <path d="M15 32 L15 17 L24 27 L33 17 L33 32" stroke="#f0f0fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="24" cy="36" r="2" fill="var(--accent)"/>
+        <svg width="22" height="18" viewBox="0 0 40 32" fill="none">
+          <line x1="4" y1="28" x2="4" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="20" y2="22" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="4" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="36" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="22" x2="36" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="8" x2="36" y2="28" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
         <span class="footer-copy">© 2026 Matheus Azevedo</span>
       </div>
@@ -331,11 +478,11 @@ function relativeTime(iso: string | undefined): string {
   }
   .stat-num {
     font-family: var(--font-display); font-weight: 800;
-    font-size: 28px; color: var(--fg-1); line-height: 1;
+    font-size: 28px; color: var(--fg-1); line-height: 1.2;
   }
   .stat-label {
-    font-size: 11px; color: var(--fg-3); margin-top: 4px;
-    font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: var(--font-display); font-size: 11px; color: var(--fg-3); margin-top: 4px;
+    font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
   }
 
   /* ── PROJECTS ── */
@@ -498,6 +645,23 @@ function relativeTime(iso: string | undefined): string {
     background: var(--border-bright); display: inline-block; flex-shrink: 0;
   }
 
+  /* ── BLOG ── */
+  .section-blog {
+    padding: 80px 24px; max-width: 1100px; margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .view-all-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent); font-size: 13px; font-weight: 600;
+    transition: gap 150ms;
+  }
+  .view-all-link:hover { gap: 10px; }
+
   /* ── FOOTER ── */
   .site-footer { border-top: 1px solid var(--border); padding: 0 24px; }
   .footer-inner {
@@ -510,6 +674,98 @@ function relativeTime(iso: string | undefined): string {
   .footer-links { display: flex; gap: 20px; }
   .footer-link { font-size: 13px; color: var(--fg-3); transition: color 150ms; }
   .footer-link:hover { color: var(--fg-1); }
+
+  /* ── EXPERIENCE ── */
+  .section-experience {
+    padding: 80px 24px; max-width: 1100px; margin: 0 auto;
+    border-top: 1px solid var(--border);
+  }
+  .exp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .exp-card-h {
+    display: flex;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 200ms ease;
+  }
+  .exp-card-h:hover {
+    border-color: var(--border-bright);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    transform: translateY(-2px);
+  }
+  .exp-bar {
+    width: 5px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .exp-content {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .exp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .exp-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--fg-1);
+    margin-bottom: 4px;
+  }
+  .exp-company {
+    font-size: 13px;
+    color: var(--fg-3);
+    font-weight: 500;
+  }
+  .exp-period {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .exp-text {
+    font-size: 13px;
+    color: var(--fg-2);
+    line-height: 1.6;
+    margin: 8px 0 12px 0;
+  }
+  .exp-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .exp-tag {
+    background: oklch(65% 0.28 268 / 0.1);
+    color: var(--accent);
+    border: 1px solid oklch(65% 0.28 268 / 0.25);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .exp-top {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .exp-period {
+      font-size: 12px;
+    }
+  }
+
 </style>
 
 <script>

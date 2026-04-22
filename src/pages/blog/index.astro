@@ -1,0 +1,465 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
+import { SITE_CONFIG } from '../../config';
+
+type Post = {
+  slug: string;
+  title: string;
+  description?: string;
+  date: string;
+  tags?: string[];
+  featured?: boolean;
+  readingTime: number;
+};
+
+function parseFrontmatter(raw: string): Record<string, string | string[] | boolean> {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) return {};
+  const yaml = match[1];
+  const result: Record<string, string | string[] | boolean> = {};
+  for (const line of yaml.split('\n')) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) continue;
+    const key = line.slice(0, colonIdx).trim();
+    const val = line.slice(colonIdx + 1).trim();
+    if (val === 'true') { result[key] = true; continue; }
+    if (val === 'false') { result[key] = false; continue; }
+    if (val.startsWith('[')) {
+      result[key] = val.slice(1, -1).split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+    } else {
+      result[key] = val.replace(/^["']|["']$/g, '');
+    }
+  }
+  return result;
+}
+
+let posts: Post[] = [];
+let allTags: string[] = [];
+try {
+  const dir = join(process.cwd(), 'content', 'blog');
+  const files = readdirSync(dir).filter((f: string) => f.endsWith('.md'));
+  posts = files
+    .map((f: string) => {
+      const raw = readFileSync(join(dir, f), 'utf-8');
+      const fm = parseFrontmatter(raw);
+      const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
+      const wordCount = body.split(/\s+/).filter(Boolean).length;
+      return {
+        slug: f.replace('.md', ''),
+        title: String(fm.title || f.replace('.md', '')),
+        description: fm.description ? String(fm.description) : undefined,
+        date: String(fm.date || ''),
+        tags: Array.isArray(fm.tags) ? fm.tags : [],
+        featured: fm.featured === true,
+        readingTime: Math.max(1, Math.round(wordCount / 200)),
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  allTags = [...new Set(posts.flatMap(p => p.tags ?? []))];
+} catch {}
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+function formatDate(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const featuredPost = posts.find(p => p.featured) ?? posts[0];
+const gridPosts = posts.filter(p => p !== featuredPost);
+---
+
+<Layout title={`Blog · ${SITE_CONFIG.siteName}`} description="Artigos sobre engenharia de software, infraestrutura, GitOps e automação.">
+
+  <!-- ── NAV ─────────────────────────────────────────────── -->
+  <nav id="main-nav">
+    <div class="nav-inner">
+      <a href={`${base}/`} class="nav-logo">
+        <svg width="26" height="22" viewBox="0 0 40 32" fill="none">
+          <line x1="4" y1="28" x2="4" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="20" y2="22" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="4" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="36" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="22" x2="36" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="8" x2="36" y2="28" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-site-name">matheus azevedo</span>
+      </a>
+      <div class="nav-links">
+        <a href={`${base}/#projects`} class="nav-link">Projetos</a>
+        <a href={`${base}/blog`} class="nav-link nav-link-active">Blog</a>
+        <a href={`${base}/#about`} class="nav-link">Sobre</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── PAGE HEADER ───────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div class="section-overline">Blog</div>
+      <h1 class="page-h1">Notas sobre<br/><span class="page-accent">engenharia real</span></h1>
+      <p class="page-sub">Escrevo sobre o que construo — infraestrutura, automação, e decisões de arquitetura que fiz (e algumas que errei).</p>
+    </div>
+  </header>
+
+  <!-- ── MAIN ──────────────────────────────────────────────── -->
+  <main class="blog-main">
+
+    <!-- Tag filters -->
+    {allTags.length > 0 && (
+      <div class="tag-filters" id="tag-filters">
+        <button class="filter-pill pill-active" data-tag="">Todos</button>
+        {allTags.map(tag => (
+          <button class="filter-pill" data-tag={tag}>{tag}</button>
+        ))}
+      </div>
+    )}
+
+    {posts.length > 0 ? (
+      <>
+        <!-- Featured post -->
+        {featuredPost && (
+          <a
+            href={`${base}/blog/${featuredPost.slug}`}
+            class="featured-card"
+            id="featured-post"
+            data-tags={JSON.stringify(featuredPost.tags ?? [])}
+          >
+            <div class="featured-top">
+              <span class="badge-featured">DESTAQUE</span>
+              <div class="featured-meta">
+                <time class="mono-date">{formatDate(featuredPost.date)}</time>
+                <span class="meta-sep">·</span>
+                <span class="meta-read">{featuredPost.readingTime} min de leitura</span>
+              </div>
+            </div>
+            <h2 class="featured-title">{featuredPost.title}</h2>
+            {featuredPost.description && (
+              <p class="featured-desc">{featuredPost.description}</p>
+            )}
+            <div class="featured-footer">
+              <div class="card-tags">
+                {(featuredPost.tags ?? []).map((t: string) => (
+                  <span class="tag">{t}</span>
+                ))}
+              </div>
+              <span class="ler-post">
+                Ler post
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+          </a>
+        )}
+
+        <!-- Posts grid -->
+        <div class="posts-grid" id="posts-grid">
+          {gridPosts.map(post => (
+            <a
+              href={`${base}/blog/${post.slug}`}
+              class="post-card"
+              data-tags={JSON.stringify(post.tags ?? [])}
+            >
+              <div class="card-meta">
+                <time class="mono-date">{formatDate(post.date)}</time>
+                <span class="meta-sep">·</span>
+                <span class="meta-read">{post.readingTime} min</span>
+              </div>
+              <h3 class="card-title">{post.title}</h3>
+              {post.description && (
+                <p class="card-desc">{post.description}</p>
+              )}
+              <div class="card-footer">
+                <div class="card-tags">
+                  {(post.tags ?? []).map((t: string) => (
+                    <span class="tag">{t}</span>
+                  ))}
+                </div>
+                <span class="card-arrow">→</span>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <!-- Empty state when filter has no results -->
+        <div class="empty-filter" id="empty-filter" style="display:none;">
+          <p class="empty-msg">Nenhum post com essa tag.</p>
+        </div>
+      </>
+    ) : (
+      <div class="empty-state">
+        <p class="empty-msg">Nenhum post ainda.</p>
+        <p class="empty-hint">Adicione arquivos Markdown em <code>content/blog/</code></p>
+      </div>
+    )}
+
+  </main>
+
+  <!-- ── FOOTER ────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="22" height="18" viewBox="0 0 40 32" fill="none">
+          <line x1="4" y1="28" x2="4" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="20" y2="22" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="4" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="36" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="22" x2="36" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="8" x2="36" y2="28" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="footer-copy">© 2026 Matheus Azevedo</span>
+      </div>
+      <div class="footer-links">
+        <a href={`https://github.com/${SITE_CONFIG.githubUser}`} target="_blank" rel="noopener" class="footer-link">GitHub</a>
+        <a href="#" class="footer-link">LinkedIn</a>
+        <a href="#" class="footer-link">Email</a>
+      </div>
+    </div>
+  </footer>
+
+</Layout>
+
+<style>
+  /* ── NAV ── */
+  #main-nav {
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 32px;
+    background: rgba(8, 8, 15, 0.9);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 960px; margin: 0 auto;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px; text-decoration: none;
+  }
+  .nav-site-name {
+    font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    color: var(--fg-1); letter-spacing: -0.01em;
+  }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-link {
+    font-size: 13px; font-weight: 500; color: var(--fg-2);
+    padding: 6px 12px; border-radius: 6px;
+    transition: all 150ms; text-decoration: none;
+  }
+  .nav-link:hover { color: var(--fg-1); background: var(--bg-elevated); }
+  .nav-link-active { color: var(--fg-1) !important; background: var(--bg-elevated); }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    padding: 72px 32px 56px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-header-inner { max-width: 960px; margin: 0 auto; }
+  .section-overline {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+  }
+  .page-h1 {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: clamp(32px, 4.5vw, 48px);
+    color: var(--fg-1); letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .page-accent { color: var(--accent); }
+  .page-sub {
+    font-size: 15px; color: var(--fg-2); max-width: 480px; line-height: 1.7;
+  }
+
+  /* ── MAIN ── */
+  .blog-main {
+    max-width: 960px; margin: 0 auto;
+    padding: 40px 32px 100px;
+  }
+
+  /* ── TAG FILTERS ── */
+  .tag-filters {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .filter-pill {
+    background: var(--bg-surface); color: var(--fg-2);
+    border: 1px solid var(--border);
+    padding: 5px 14px; border-radius: 9999px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 150ms; font-family: var(--font-body);
+  }
+  .filter-pill:hover { color: var(--fg-1); border-color: var(--border-bright); }
+  .pill-active {
+    background: oklch(65% 0.28 268 / 0.15);
+    color: var(--accent);
+    border-color: oklch(65% 0.28 268 / 0.4);
+  }
+
+  /* ── FEATURED CARD ── */
+  .featured-card {
+    display: block; text-decoration: none;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 32px 36px;
+    transition: all 200ms ease; margin-bottom: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .featured-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  .featured-card:hover .ler-post { color: var(--accent); }
+  .featured-top {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .badge-featured {
+    background: oklch(65% 0.28 268 / 0.12);
+    color: var(--accent);
+    border: 1px solid oklch(65% 0.28 268 / 0.3);
+    border-radius: 6px; padding: 3px 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  }
+  .featured-meta {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mono-date {
+    font-family: var(--font-mono); font-size: 12px; color: var(--fg-4);
+  }
+  .meta-sep { color: var(--fg-4); font-size: 12px; }
+  .meta-read { font-size: 12px; color: var(--fg-4); }
+  .featured-title {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: clamp(20px, 2.5vw, 26px);
+    color: var(--fg-1); letter-spacing: -0.02em; line-height: 1.25;
+    margin-bottom: 14px;
+  }
+  .featured-desc {
+    font-size: 15px; color: var(--fg-2); line-height: 1.7;
+    margin-bottom: 20px; max-width: 640px;
+  }
+  .featured-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .ler-post {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 600; color: var(--fg-3);
+    transition: color 150ms; flex-shrink: 0;
+  }
+
+  /* ── POSTS GRID ── */
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  /* ── POST CARD ── */
+  .post-card {
+    display: flex; flex-direction: column; gap: 10px;
+    text-decoration: none;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 24px;
+    transition: all 200ms ease;
+  }
+  .post-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .post-card:hover .card-arrow { color: var(--accent); }
+  .card-meta {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: 16px; color: var(--fg-1); letter-spacing: -0.02em; line-height: 1.5;
+  }
+  .card-desc {
+    font-size: 13px; color: var(--fg-2); line-height: 1.65; flex-grow: 1;
+  }
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 8px; border-top: 1px solid var(--border);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+  .tag {
+    background: var(--bg-elevated); border: 1px solid var(--border-bright);
+    color: var(--fg-3); padding: 2px 8px;
+    border-radius: 9999px; font-size: 10px;
+  }
+  .card-arrow {
+    font-size: 14px; color: var(--fg-4); transition: color 150ms; font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* ── EMPTY STATES ── */
+  .empty-state, .empty-filter {
+    border: 1px dashed var(--border); border-radius: 16px;
+    padding: 80px 24px; text-align: center;
+  }
+  .empty-filter { margin-top: 8px; }
+  .empty-msg { font-size: 13px; color: var(--fg-3); font-family: var(--font-mono); }
+  .empty-hint { font-size: 12px; color: var(--fg-4); margin-top: 8px; }
+  .empty-hint code { color: var(--accent); font-family: var(--font-mono); }
+
+  /* ── FOOTER ── */
+  .site-footer { border-top: 1px solid var(--border); padding: 0 32px; }
+  .footer-inner {
+    max-width: 960px; margin: 0 auto; padding: 32px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 10px; }
+  .footer-copy { font-size: 13px; color: var(--fg-3); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-link { font-size: 13px; color: var(--fg-3); transition: color 150ms; text-decoration: none; }
+  .footer-link:hover { color: var(--fg-1); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .page-header { padding: 60px 20px 40px; }
+    .blog-main { padding: 32px 20px 80px; }
+    #main-nav { padding: 0 20px; }
+    .featured-card { padding: 24px 20px; }
+  }
+</style>
+
+<script>
+  const pills = document.querySelectorAll<HTMLButtonElement>('.filter-pill');
+  const featuredPost = document.getElementById('featured-post');
+  const gridCards = document.querySelectorAll<HTMLElement>('.post-card');
+  const emptyFilter = document.getElementById('empty-filter');
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('pill-active'));
+      pill.classList.add('pill-active');
+      const tag = pill.dataset.tag || '';
+
+      if (!tag) {
+        // Show all
+        if (featuredPost) featuredPost.style.display = '';
+        gridCards.forEach(c => c.style.display = '');
+        if (emptyFilter) emptyFilter.style.display = 'none';
+      } else {
+        // Hide featured post, filter grid
+        if (featuredPost) featuredPost.style.display = 'none';
+        let visible = 0;
+        gridCards.forEach(c => {
+          const tags: string[] = JSON.parse(c.dataset.tags || '[]');
+          const show = tags.includes(tag);
+          c.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        // Also check if featured has this tag - show it in context if so
+        if (emptyFilter) emptyFilter.style.display = visible === 0 ? '' : 'none';
+      }
+    });
+  });
+</script>

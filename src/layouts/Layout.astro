@@ -125,10 +125,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   .prose code:not(pre code)::before,
   .prose code:not(pre code)::after { content: none; }
+  .prose h1 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.3;
+    color: var(--fg-1);
+    letter-spacing: -0.02em;
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
   .prose h2 {
-    font-family: var(--font-display);
-    font-weight: 700;
+    font-family: var(--font-body);
+    font-weight: 600;
     font-size: 22px;
+    line-height: 1.5;
     color: var(--fg-1);
     letter-spacing: -0.02em;
     margin-top: 36px;
@@ -137,9 +148,10 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     border-bottom: 1px solid var(--border);
   }
   .prose h3 {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: 16px;
+    line-height: 1.5;
     color: var(--fg-1);
     margin-top: 24px;
     margin-bottom: 10px;
@@ -156,6 +168,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   .prose hr { border-color: var(--border); }
   .prose a { color: var(--accent); }
   .prose a:hover { color: var(--accent-bright); }
+
+  /* Code block language label */
+  .prose pre { position: relative !important; padding-top: 36px !important; }
+  .code-lang-label {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 5px 14px;
+    background: #0f0f1a; border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono); font-size: 10px; color: var(--fg-4);
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+    border-radius: 8px 8px 0 0;
+  }
 
   /* Changelog version entries */
   .changelog-content h2 { display: flex; align-items: center; gap: 12px; }

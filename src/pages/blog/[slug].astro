@@ -1,0 +1,288 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { readdirSync, readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { marked } from 'marked';
+import { SITE_CONFIG } from '../../config';
+
+export function getStaticPaths() {
+  try {
+    const dir = join(process.cwd(), 'content', 'blog');
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir)
+      .filter((f: string) => f.endsWith('.md'))
+      .map((f: string) => ({ params: { slug: f.replace('.md', '') } }));
+  } catch { return []; }
+}
+
+const { slug } = Astro.params as { slug: string };
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+function parseFrontmatter(raw: string): { meta: Record<string, string | string[]>; content: string } {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!match) return { meta: {}, content: raw };
+  const yaml = match[1];
+  const content = match[2];
+  const meta: Record<string, string | string[]> = {};
+  for (const line of yaml.split('\n')) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx === -1) continue;
+    const key = line.slice(0, colonIdx).trim();
+    const val = line.slice(colonIdx + 1).trim();
+    if (val.startsWith('[')) {
+      meta[key] = val.slice(1, -1).split(',').map(s => s.trim().replace(/^["']|["']$/g, ''));
+    } else {
+      meta[key] = val.replace(/^["']|["']$/g, '');
+    }
+  }
+  return { meta, content };
+}
+
+const filePath = join(process.cwd(), 'content', 'blog', `${slug}.md`);
+const raw = readFileSync(filePath, 'utf-8');
+const { meta, content } = parseFrontmatter(raw);
+
+const title = String(meta.title || slug);
+const description = meta.description ? String(meta.description) : undefined;
+const date = String(meta.date || '');
+const tags: string[] = Array.isArray(meta.tags) ? meta.tags : [];
+
+const html = String(marked.parse(content));
+
+function formatDate(iso: string): string {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const wordCount = content.split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.round(wordCount / 200));
+
+// Initials from last 2 words of site name (e.g. "Matheus Azevedo" → "MA")
+const initials = SITE_CONFIG.siteName
+  ? SITE_CONFIG.siteName.split(' ').slice(-2).map((w: string) => w[0]).join('').toUpperCase()
+  : 'MA';
+---
+
+<Layout title={`${title} · Blog · ${SITE_CONFIG.siteName}`} description={description}>
+
+  <!-- ── NAV ─────────────────────────────────────────────── -->
+  <nav id="post-nav">
+    <div class="nav-inner">
+      <a href={`${base}/`} class="nav-logo">
+        <svg width="26" height="22" viewBox="0 0 40 32" fill="none">
+          <line x1="4" y1="28" x2="4" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="4" y1="8" x2="20" y2="22" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="4" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="4" x2="36" y2="8" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="20" y1="22" x2="36" y2="8" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="36" y1="8" x2="36" y2="28" stroke="var(--fg-1)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-site-name">matheus azevedo</span>
+      </a>
+      <a href={`${base}/blog`} class="nav-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Todos os posts
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── ARTICLE ─────────────────────────────────────────── -->
+  <article class="article-wrap">
+
+    <!-- Header -->
+    <header class="article-header">
+      {tags.length > 0 && (
+        <div class="article-tags">
+          {tags.map((tag: string) => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      )}
+
+      <h1 class="article-title">{title}</h1>
+
+      {description && (
+        <p class="article-desc">{description}</p>
+      )}
+
+      <div class="article-byline">
+        <div class="author-avatar">{initials}</div>
+        <span class="author-name">{SITE_CONFIG.siteName}</span>
+        {date && (
+          <>
+            <span class="byline-sep">·</span>
+            <time class="byline-date" datetime={date}>{formatDate(date)}</time>
+          </>
+        )}
+        <span class="byline-sep">·</span>
+        <span class="byline-read">{readingTime} min de leitura</span>
+      </div>
+
+      <div class="article-divider"></div>
+    </header>
+
+    <!-- Body -->
+    <div class="prose prose-invert article-body" set:html={html} />
+
+    <!-- Footer -->
+    <footer class="article-footer">
+      <a href={`${base}/blog`} class="footer-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Todos os posts
+      </a>
+    </footer>
+
+  </article>
+
+</Layout>
+
+<style>
+  /* ── NAV ── */
+  #post-nav {
+    position: sticky; top: 0; z-index: 50;
+    padding: 0 32px;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: all 300ms;
+  }
+  #post-nav.scrolled {
+    background: rgba(8, 8, 15, 0.9);
+    backdrop-filter: blur(16px);
+    border-bottom-color: var(--border);
+  }
+  .nav-inner {
+    max-width: 680px; margin: 0 auto;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px; text-decoration: none;
+  }
+  .nav-site-name {
+    font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    color: var(--fg-1); letter-spacing: -0.01em;
+  }
+  .nav-back {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--fg-2);
+    text-decoration: none; transition: color 150ms;
+  }
+  .nav-back:hover { color: var(--fg-1); }
+
+  /* ── ARTICLE ── */
+  .article-wrap {
+    max-width: 680px; margin: 0 auto;
+    padding: 56px 24px 120px;
+  }
+
+  /* ── HEADER ── */
+  .article-header { margin-bottom: 0; }
+  .article-tags {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .tag {
+    background: var(--bg-surface); border: 1px solid var(--border);
+    color: var(--fg-3); padding: 3px 10px;
+    border-radius: 9999px; font-size: 11px;
+  }
+  .article-title {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: clamp(26px, 3.5vw, 38px);
+    color: var(--fg-1); letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  .article-desc {
+    font-size: 16px; color: var(--fg-2); line-height: 1.65;
+    margin-bottom: 24px; max-width: 640px;
+  }
+  .article-byline {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 32px;
+  }
+  .author-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg-elevated); border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 12px; color: var(--accent); flex-shrink: 0;
+  }
+  .author-name {
+    font-size: 13px; font-weight: 600; color: var(--fg-1);
+  }
+  .byline-sep { color: var(--border); font-size: 12px; }
+  .byline-date {
+    font-family: var(--font-mono); font-size: 13px; color: var(--fg-3);
+  }
+  .byline-read { font-size: 13px; color: var(--fg-3); }
+  .article-divider {
+    height: 1px; background: var(--border); margin-bottom: 36px;
+  }
+
+  /* ── BODY ── */
+  .article-body { max-width: 680px; }
+
+  /* ── FOOTER ── */
+  .article-footer {
+    margin-top: 56px; padding-top: 28px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-back {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--fg-3); font-size: 13px; font-weight: 500;
+    transition: color 150ms; text-decoration: none;
+  }
+  .footer-back:hover { color: var(--accent); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .article-wrap { padding: 40px 20px 80px; }
+    #post-nav { padding: 0 20px; }
+    .nav-site-name { display: none; }
+  }
+</style>
+
+<script>
+  const nav = document.getElementById('post-nav');
+  window.addEventListener('scroll', () => {
+    nav?.classList.toggle('scrolled', window.scrollY > 20);
+  }, { passive: true });
+
+  // Mermaid support
+  function convertMermaidBlocks() {
+    document.querySelectorAll('code.language-mermaid').forEach(el => {
+      const pre = el.parentElement;
+      if (!pre) return;
+      const div = document.createElement('div');
+      div.className = 'mermaid not-prose';
+      div.textContent = el.textContent || '';
+      pre.replaceWith(div);
+    });
+  }
+
+  async function renderMermaid() {
+    const m = (window as any).__mermaid;
+    if (!m) return;
+    const nodes = Array.from(document.querySelectorAll('.mermaid:not([data-processed])'));
+    if (nodes.length === 0) return;
+    try { await m.run({ nodes }); } catch {}
+  }
+
+  convertMermaidBlocks();
+  if ((window as any).__mermaid) {
+    renderMermaid();
+  } else {
+    document.addEventListener('mermaid:ready', renderMermaid, { once: true });
+  }
+
+  // Add language labels to code blocks
+  document.querySelectorAll('pre code[class]').forEach(el => {
+    const pre = el.parentElement as HTMLElement;
+    if (!pre) return;
+    const cls = el.className.match(/language-(\w+)/);
+    if (!cls || cls[1] === 'mermaid') return;
+    const label = document.createElement('div');
+    label.className = 'code-lang-label';
+    label.textContent = cls[1];
+    pre.insertBefore(label, pre.firstChild);
+  });
+</script>

@@ -5,7 +5,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
+    "changelog:all": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "release": "npm run changelog:all && git add CHANGELOG.md && git commit -m 'docs: update changelog' && git tag v$(node -p \"require('./package.json').version\")",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",
@@ -17,6 +23,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "conventional-changelog-cli": "^5.0.0"
   }
 }

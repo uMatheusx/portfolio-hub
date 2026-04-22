@@ -1,0 +1,110 @@
+---
+import { SITE_CONFIG } from '../config';
+
+export interface Props {
+  post: {
+    slug: string;
+    title: string;
+    description?: string;
+    tags?: string[];
+    date: string;
+  };
+}
+
+const { post } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  const formatter = new Intl.DateTimeFormat('pt-BR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  return formatter.format(date);
+}
+---
+
+<a href={`${base}/blog/${post.slug}`} class="blog-card">
+  <div class="blog-card-header">
+    <h3 class="blog-card-title">{post.title}</h3>
+    <time class="blog-card-date" datetime={post.date}>
+      {formatDate(post.date)}
+    </time>
+  </div>
+  {post.description && (
+    <p class="blog-card-desc">{post.description}</p>
+  )}
+  {post.tags && post.tags.length > 0 && (
+    <div class="blog-card-tags">
+      {post.tags.map(tag => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  )}
+</a>
+
+<style>
+  .blog-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: all 200ms ease;
+  }
+
+  .blog-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .blog-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .blog-card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--fg-1);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .blog-card-date {
+    font-size: 12px;
+    color: var(--fg-3);
+    font-family: var(--font-mono);
+  }
+
+  .blog-card-desc {
+    font-size: 14px;
+    color: var(--fg-2);
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .blog-card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-bright);
+    color: var(--fg-2);
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+</style>
