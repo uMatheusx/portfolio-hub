@@ -20,7 +20,7 @@ jobs:
           VERSION="${{ github.event.client_payload.version }}"
           DISPLAY_NAME="${{ github.event.client_payload.display_name }}"
           DESCRIPTION="${{ github.event.client_payload.description }}"
-          TAGS="${{ github.event.client_payload.tags }}"
+          TAGS='${{ toJSON(github.event.client_payload.tags) }}'
           REPO="${{ github.event.client_payload.repo }}"
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           FILE="projects/$PROJECT.json"
