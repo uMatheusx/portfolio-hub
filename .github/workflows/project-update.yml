@@ -50,20 +50,29 @@ jobs:
              .docs_updated_at = $now' \
             "$FILE" > tmp.json && mv tmp.json "$FILE"
 
-      - name: Buscar changelog do projeto
+      - name: Buscar changelog e docs do projeto
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PORTFOLIO_TOKEN: ${{ secrets.PORTFOLIO_TOKEN }}
         run: |
           PROJECT="${{ github.event.client_payload.project }}"
           REPO="${{ github.event.client_payload.repo }}"
 
           mkdir -p "docs/$PROJECT"
 
-          curl -s \
-            -H "Authorization: token $GH_TOKEN" \
-            -H "Accept: application/vnd.github.v3.raw" \
-            "https://api.github.com/repos/$REPO/contents/CHANGELOG.md" \
-            -o "docs/$PROJECT/CHANGELOG.md"
+          fetch_file() {
+            local src=$1
+            local dest=$2
+            curl -s -w "%{http_code}" \
+              -H "Authorization: token $PORTFOLIO_TOKEN" \
+              -H "Accept: application/vnd.github.v3.raw" \
+              "https://api.github.com/repos/$REPO/contents/$src" \
+              -o "$dest"
+          }
+
+          fetch_file "CHANGELOG.md" "docs/$PROJECT/CHANGELOG.md"
+          fetch_file "docs/README.md" "docs/$PROJECT/README.md"
+          fetch_file "docs/architecture.md" "docs/$PROJECT/architecture.md"
+          fetch_file "docs/usage.md" "docs/$PROJECT/usage.md"
 
       - name: Commitar mudanças
         run: |
