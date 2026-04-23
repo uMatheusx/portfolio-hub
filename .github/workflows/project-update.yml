@@ -83,6 +83,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add "projects/$PROJECT.json" "docs/$PROJECT/" "changelogs/$PROJECT.md"
-          git diff --staged --quiet || git commit -m "chore($PROJECT): update to v$VERSION"
+          git diff --staged --quiet || git commit -m "$PROJECT: update to v$VERSION"
           git pull --rebase origin main
           git push
