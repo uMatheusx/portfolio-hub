@@ -18,18 +18,36 @@ jobs:
         run: |
           PROJECT="${{ github.event.client_payload.project }}"
           VERSION="${{ github.event.client_payload.version }}"
+          DISPLAY_NAME="${{ github.event.client_payload.display_name }}"
+          DESCRIPTION="${{ github.event.client_payload.description }}"
+          TAGS="${{ github.event.client_payload.tags }}"
+          REPO="${{ github.event.client_payload.repo }}"
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           FILE="projects/$PROJECT.json"
 
           if [ ! -f "$FILE" ]; then
-            echo "Arquivo $FILE não encontrado. Crie projects/$PROJECT.json no portfolio-hub primeiro."
-            exit 1
+            echo "Arquivo $FILE não encontrado, criando..."
+            mkdir -p projects
+            echo "{}" > "$FILE"
           fi
 
           jq \
+            --arg name "$PROJECT" \
+            --arg displayName "$DISPLAY_NAME" \
             --arg version "$VERSION" \
+            --arg description "$DESCRIPTION" \
+            --arg repoUrl "https://github.com/$REPO" \
+            --argjson tags "$TAGS" \
             --arg now "$NOW" \
-            '.version = $version | .changelog_updated_at = $now | .docs_updated_at = $now' \
+            '.name = $name |
+             .display_name = $displayName |
+             .version = $version |
+             .description = $description |
+             .repo_url = $repoUrl |
+             .tags = $tags |
+             .status = (if .status then .status else "active" end) |
+             .changelog_updated_at = $now |
+             .docs_updated_at = $now' \
             "$FILE" > tmp.json && mv tmp.json "$FILE"
 
       - name: Buscar changelog do projeto
