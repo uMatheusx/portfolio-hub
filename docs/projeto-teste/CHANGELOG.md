@@ -1,5 +1,10 @@
+## 0.11.0 (2026-04-23)
+
+* feat: rezando... ([f0346bd](https://github.com/MatheusAzevedoDev/projeto-teste/commit/f0346bd))
+
 ## 0.10.0 (2026-04-23)
 
+* chore: release v0.10.0 [skip ci] ([8937a89](https://github.com/MatheusAzevedoDev/projeto-teste/commit/8937a89))
 * feat: agora vaiiii ([35b31be](https://github.com/MatheusAzevedoDev/projeto-teste/commit/35b31be))
 
 ## 0.9.0 (2026-04-23)
