@@ -1,0 +1,14 @@
+{
+  "name": "projeto-teste",
+  "display_name": "Projeto Teste",
+  "version": "0.2.4",
+  "description": "Projeto de teste do template GitOps.",
+  "repo_url": "https://github.com/MatheusAzevedoDev/projeto-teste",
+  "tags": [
+    "GitOps",
+    "Template"
+  ],
+  "status": "active",
+  "changelog_updated_at": "2026-04-23T00:26:53Z",
+  "docs_updated_at": "2026-04-23T00:26:53Z"
+}
