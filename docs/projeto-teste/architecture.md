@@ -1,5 +1,34 @@
-{
-  "message": "The 'MatheusAzevedoDev' organization forbids access via a fine-grained personal access tokens if the token's lifetime is greater than 366 days. Please adjust your token's lifetime at the following URL: https://github.com/settings/personal-access-tokens/13823507",
-  "documentation_url": "https://docs.github.com/rest/repos/contents#get-repository-content",
-  "status": "403"
-}
+# Arquitetura
+
+> Substitua este arquivo com as decisões de design e arquitetura do seu projeto.
+
+## Visão geral
+
+Descreva a estrutura de alto nível do sistema.
+
+```mermaid
+graph LR
+    A[Input] --> B[Processamento] --> C[Output]
+```
+
+## Componentes
+
+### Componente A
+
+Descreva o papel e responsabilidade de cada componente principal.
+
+### Componente B
+
+...
+
+## Decisões de design
+
+Registre aqui o raciocínio por trás das escolhas técnicas relevantes — tecnologias escolhidas, padrões adotados, trade-offs conscientes.
+
+| Decisão | Alternativa considerada | Motivo da escolha |
+|---------|------------------------|-------------------|
+| | | |
+
+## Dependências externas
+
+Liste serviços externos, APIs ou infraestrutura da qual o projeto depende.
