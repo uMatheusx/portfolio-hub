@@ -1,5 +1,11 @@
+## 1.0.0 (2026-04-23)
+
+* feat!: deploy v 1.0.0 ([01d65e2](https://github.com/MatheusAzevedoDev/projeto-teste/commit/01d65e2))
+* feat!: v2 workflows ([c61c004](https://github.com/MatheusAzevedoDev/projeto-teste/commit/c61c004))
+
 ## 0.15.0 (2026-04-23)
 
+* chore: release v0.15.0 [skip ci] ([32103a8](https://github.com/MatheusAzevedoDev/projeto-teste/commit/32103a8))
 * feat: yuri alberto ([5068ef5](https://github.com/MatheusAzevedoDev/projeto-teste/commit/5068ef5))
 
 ## 0.14.0 (2026-04-23)

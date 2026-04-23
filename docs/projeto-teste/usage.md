@@ -36,4 +36,4 @@ npm start
 
 ## Exemplos
 
-Adicione exemplos concretos para os cenários mais importantes. amemadwadwdadadwaaaa
+Adicione exemplos concretos para os cenários mais importantes. amemadwadwdadadwaaaaaaaa
