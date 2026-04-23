@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PORTFOLIO_TOKEN }}
 
       - name: Atualizar metadados do projeto
         run: |
