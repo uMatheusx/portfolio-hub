@@ -456,16 +456,19 @@ const gridPosts = posts.filter(p => p !== featuredPost);
         gridCards.forEach(c => c.style.display = '');
         if (emptyFilter) emptyFilter.style.display = 'none';
       } else {
-        // Hide featured post, filter grid
-        if (featuredPost) featuredPost.style.display = 'none';
         let visible = 0;
+        if (featuredPost) {
+          const featuredTags: string[] = JSON.parse(featuredPost.dataset.tags || '[]');
+          const show = featuredTags.includes(tag);
+          featuredPost.style.display = show ? '' : 'none';
+          if (show) visible++;
+        }
         gridCards.forEach(c => {
           const tags: string[] = JSON.parse(c.dataset.tags || '[]');
           const show = tags.includes(tag);
           c.style.display = show ? '' : 'none';
           if (show) visible++;
         });
-        // Also check if featured has this tag - show it in context if so
         if (emptyFilter) emptyFilter.style.display = visible === 0 ? '' : 'none';
       }
     });
