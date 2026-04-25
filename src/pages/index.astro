@@ -93,13 +93,15 @@ function relativeTime(iso: string | undefined): string {
       <div class="hero-overline">
         <div class="overline-bar"></div>
         <span>Engenheiro de Software</span>
+        <div class="overline-bar"></div>
       </div>
       <h1 class="hero-h1">
         Matheus<br/>
         <span class="hero-accent">Azevedo</span>
       </h1>
       <p class="hero-sub">
-        Construo sistemas que funcionam em produção — não só no README. Cada projeto tem documentação real, GitOps, e releases rastreáveis.
+        Construo sistemas que funcionam em produção — não só no README.<br class="hero-br"/>
+        Cada projeto tem documentação real, GitOps, e releases rastreáveis.
       </p>
       <div class="hero-ctas">
         <a href="#projects" class="cta-primary">
@@ -286,6 +288,7 @@ function relativeTime(iso: string | undefined): string {
       </div>
     </div>
 
+    <div class="exp-layout">
     <div class="exp-timeline">
 
       <!-- Entry: current role -->
@@ -376,6 +379,71 @@ function relativeTime(iso: string | undefined): string {
       </div>
 
     </div>
+
+      <!-- ── ACADEMIC COLUMN ── -->
+      <div class="acad-col" data-exp>
+
+        <h3 class="acad-col-title">Educação &amp; Certificações</h3>
+
+        <div class="acad-groups">
+
+          <div class="acad-group">
+            <div class="acad-group-header">
+              <span class="acad-group-label">Graduação</span>
+              <div class="acad-group-line"></div>
+            </div>
+            <div class="acad-items">
+              <div class="acad-item">
+                <div class="acad-item-name">Ciência da Computação</div>
+                <div class="acad-item-inst">Universidade XYZ</div>
+                <div class="acad-item-year">2018 — 2022</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="acad-group">
+            <div class="acad-group-header">
+              <span class="acad-group-label">Certificações</span>
+              <div class="acad-group-line"></div>
+            </div>
+            <div class="acad-items">
+              <div class="acad-item">
+                <div class="acad-item-name">Certified Kubernetes Administrator</div>
+                <div class="acad-item-inst">Cloud Native Computing Foundation</div>
+                <div class="acad-item-year">2023</div>
+              </div>
+              <div class="acad-item">
+                <div class="acad-item-name">AWS Solutions Architect Associate</div>
+                <div class="acad-item-inst">Amazon Web Services</div>
+                <div class="acad-item-year">2022</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="acad-group">
+            <div class="acad-group-header">
+              <span class="acad-group-label">Cursos</span>
+              <div class="acad-group-line"></div>
+            </div>
+            <div class="acad-items">
+              <div class="acad-item">
+                <div class="acad-item-name">Distributed Systems</div>
+                <div class="acad-item-inst">MIT OpenCourseWare</div>
+                <div class="acad-item-year">2022</div>
+              </div>
+              <div class="acad-item">
+                <div class="acad-item-name">Advanced Go Programming</div>
+                <div class="acad-item-inst">Udemy</div>
+                <div class="acad-item-year">2021</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
   </section>
 
   <!-- ── BLOG ──────────────────────────────────────────────── -->
@@ -427,14 +495,19 @@ function relativeTime(iso: string | undefined): string {
   /* ── NAV ── */
   /* ── HERO ── */
   #hero {
-    display: flex; align-items: center;
-    padding: 100px 24px 72px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 120px 24px 88px;
     max-width: 1100px; margin: 0 auto;
-    min-height: min(680px, 90vh);
+    min-height: min(720px, 92vh);
+    text-align: center;
   }
-  .hero-inner { max-width: 640px; }
+  .hero-inner {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%;
+  }
   .hero-overline {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px; justify-content: center;
   }
   .overline-bar { width: 24px; height: 1px; background: var(--accent); }
   .hero-overline span {
@@ -443,16 +516,20 @@ function relativeTime(iso: string | undefined): string {
   }
   .hero-h1 {
     font-family: var(--font-body); font-weight: 600;
-    font-size: clamp(38px, 5vw, 68px);
-    line-height: 1.08; letter-spacing: -0.02em;
-    color: var(--fg-1); margin-bottom: 20px;
+    font-size: clamp(52px, 9vw, 96px);
+    line-height: 1.04; letter-spacing: -0.03em;
+    color: var(--fg-1); margin-bottom: 28px;
   }
   .hero-accent { color: var(--accent); }
   .hero-sub {
-    font-size: clamp(15px, 1.6vw, 18px); color: var(--fg-2);
-    line-height: 1.65; max-width: 480px; margin-bottom: 36px;
+    font-size: clamp(15px, 1.6vw, 17px); color: var(--fg-2);
+    line-height: 1.7; max-width: 520px; margin-bottom: 40px;
   }
-  .hero-ctas { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .hero-br { display: block; }
+  .hero-ctas {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    justify-content: center; align-items: center;
+  }
   .cta-primary {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--accent); color: #fff;
@@ -461,7 +538,7 @@ function relativeTime(iso: string | undefined): string {
     box-shadow: 0 0 28px oklch(65% 0.28 268 / 0.3);
     transition: all 150ms;
   }
-  .cta-primary:hover { background: var(--accent-bright); }
+  .cta-primary:hover { background: var(--accent-bright); box-shadow: 0 0 36px oklch(65% 0.28 268 / 0.45); }
   .cta-secondary {
     display: inline-flex; align-items: center; gap: 8px;
     background: transparent; color: var(--fg-2);
@@ -472,17 +549,23 @@ function relativeTime(iso: string | undefined): string {
   }
   .cta-secondary:hover { color: var(--fg-1); border-color: #4a4a70; }
   .hero-stats {
-    display: flex; gap: 28px; flex-wrap: wrap;
-    margin-top: 48px; padding-top: 28px;
+    display: flex; gap: 48px; flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 56px; padding-top: 32px;
     border-top: 1px solid var(--border);
+    width: 100%; max-width: 320px;
   }
+  .stat { text-align: center; }
   .stat-num {
     font-family: var(--font-body); font-weight: 600;
-    font-size: 26px; color: var(--fg-1); line-height: 1.2; letter-spacing: -0.02em;
+    font-size: 28px; color: var(--fg-1); line-height: 1.2; letter-spacing: -0.02em;
   }
   .stat-label {
-    font-family: var(--font-body); font-size: 12px; color: var(--fg-3); margin-top: 2px;
+    font-family: var(--font-body); font-size: 12px; color: var(--fg-3); margin-top: 3px;
     font-weight: 400;
+  }
+  @media (max-width: 480px) {
+    .hero-br { display: none; }
   }
 
   /* ── PROJECTS ── */
@@ -720,6 +803,73 @@ function relativeTime(iso: string | undefined): string {
     transition: color 200ms;
   }
   .tech-card:hover .tech-name { color: var(--fg-1); }
+
+  /* ── EXP LAYOUT (timeline then academic below) ── */
+  .exp-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Academic column */
+  .acad-col {
+    margin-top: 48px;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 550ms cubic-bezier(0.22,1,0.36,1),
+                transform 550ms cubic-bezier(0.22,1,0.36,1);
+    transition-delay: 200ms;
+  }
+  .acad-col.exp-visible { opacity: 1; transform: translateY(0); }
+
+  .acad-col-title {
+    font-family: var(--font-body); font-weight: 600;
+    font-size: clamp(26px, 3.4vw, 36px);
+    color: var(--fg-1); letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 32px;
+  }
+
+  /* Groups */
+  .acad-groups { display: flex; flex-direction: column; gap: 36px; }
+  .acad-group { }
+  .acad-group-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+  }
+  .acad-group-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--fg-3); white-space: nowrap;
+  }
+  .acad-group-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* Items */
+  .acad-items { display: flex; flex-direction: column; }
+  .acad-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 20px; align-items: center;
+    padding: 11px 10px; border-radius: 8px;
+    transition: background 150ms ease, padding-left 150ms ease;
+    cursor: default;
+  }
+  .acad-item:hover { background: var(--bg-elevated); padding-left: 14px; }
+  .acad-item-name {
+    font-size: 14px; font-weight: 600;
+    color: var(--fg-1); letter-spacing: -0.01em; line-height: 1.3;
+  }
+  .acad-item-inst {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--fg-3); white-space: nowrap;
+  }
+  .acad-item-year {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--fg-4); white-space: nowrap;
+  }
+  @media (max-width: 540px) {
+    .acad-item { grid-template-columns: 1fr auto; }
+    .acad-item-inst { display: none; }
+  }
 
   /* ── BLOG ── */
   .section-blog {
