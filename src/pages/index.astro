@@ -100,8 +100,7 @@ function relativeTime(iso: string | undefined): string {
         <span class="hero-accent">Azevedo</span>
       </h1>
       <p class="hero-sub">
-        Construo sistemas que funcionam em produção — não só no README.<br class="hero-br"/>
-        Cada projeto tem documentação real, GitOps, e releases rastreáveis.
+        Engenheiro de Software com foco em cloud e arquitetura de sistemas. Trabalho construindo soluções escaláveis e resilientes, com práticas modernas de engenharia.<br class="hero-br"/>
       </p>
       <div class="hero-ctas">
         <a href="#projects" class="cta-primary">
@@ -197,22 +196,22 @@ function relativeTime(iso: string | undefined): string {
     <div class="about-bio-wrap">
       <div class="about-bio">
         <div class="section-overline">Sobre</div>
-        <h2 class="about-h2">Feito com obsessão<br/>por detalhe</h2>
+        <h2 class="about-h2">Um pouco <br>sobre mim</h2>
         <!-- Edite este parágrafo com seu texto pessoal -->
         <p class="about-p">
-          Sou engenheiro de software focado em infraestrutura e automação. Acredito que um bom projeto não termina no commit — ele tem documentação real, releases rastreáveis e um pipeline que funciona enquanto você dorme.
+          Sou Engenheiro de Software, com foco na construção de soluções em cloud que sejam escaláveis, resilientes e bem estruturadas. Gosto de ir além da implementação, buscando entender os problemas a fundo para propor soluções que façam sentido no longo prazo.
+
+          <br><br>Tenho um perfil voltado à arquitetura e organização de sistemas, sempre equilibrando qualidade técnica com pragmatismo. Valorizo código claro, sistemas desacoplados e a capacidade de evoluir continuamente sem gerar complexidade desnecessária.
+
+          <br><br>Atualmente, curso Sistemas de Informação na USP e tenho interesse especial em arquitetura de software, sistemas distribuídos e engenharia de plataforma.
         </p>
-        <a href={`https://github.com/${SITE_CONFIG.githubUser}`} target="_blank" rel="noopener" class="about-cta">
-          <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
-        </a>
       </div>
     </div>
 
     <!-- Stack com ícones reais, agrupados por segmento -->
     <div class="stack-section">
       <div class="stack-section-header">
-        <div class="stack-section-overline">Stack</div>
+        <div class="stack-section-overline">Stacks</div>
         <div class="stack-section-line"></div>
       </div>
       <div class="stack-groups">
@@ -220,10 +219,9 @@ function relativeTime(iso: string | undefined): string {
           {
             cat: 'Backend',
             items: [
-              { name: 'Go',         icon: 'go',           color: '00ADD8' },
-              { name: 'Rust',       icon: 'rust',         color: 'CE422B' },
-              { name: 'TypeScript', icon: 'typescript',   color: '3178C6' },
-              { name: 'Python',     icon: 'python',       color: '3776AB' },
+              { name: 'Python',         icon: 'python',           color: '3776AB' },
+              { name: 'Java',       icon: 'java',         color: 'CE422B' },
+              { name: 'Go', icon: 'go',   color: '00ADD8' },
             ],
           },
           {
@@ -232,24 +230,23 @@ function relativeTime(iso: string | undefined): string {
               { name: 'Kubernetes', icon: 'kubernetes',   color: '326CE5' },
               { name: 'Terraform',  icon: 'terraform',    color: '7B42BC' },
               { name: 'Docker',     icon: 'docker',       color: '2496ED' },
-              { name: 'AWS Certified SAA-C03',        icon: 'amazonaws',    color: 'FF9900' },
+              { name: 'AWS',        icon: 'amazonaws',    color: 'FF9900' },
             ],
           },
           {
-            cat: 'Data',
+            cat: 'Frameworks',
             items: [
-              { name: 'PostgreSQL', icon: 'postgresql',   color: '336791' },
-              { name: 'Redis',      icon: 'redis',        color: 'FF4438' },
-              { name: 'ClickHouse', icon: 'clickhouse',   color: 'FFCC01' },
-              { name: 'NATS',       icon: 'natsdotio',    color: '27AAE1' },
+              { name: 'Spring', icon: 'spring',   color: '6DB33F' },
+              { name: 'Flask',      icon: 'flask',        color: '3BABC3' },
+              { name: 'Gin', icon: 'gin',   color: '008ECF' },
+              { name: 'quarkus',       icon: 'quarkus',    color: '4695EB' },
             ],
           },
           {
             cat: 'Observability',
             items: [
-              { name: 'Prometheus',    icon: 'prometheus',    color: 'E6522C' },
+              { name: 'Datadog',    icon: 'datadog',    color: '632CA6' },
               { name: 'Grafana',       icon: 'grafana',       color: 'F46800' },
-              { name: 'OpenTelemetry', icon: 'opentelemetry', color: '425CC7' },
             ],
           },
         ] as { cat: string; items: { name: string; icon: string; color: string }[] }[]).map(group => (
@@ -295,8 +292,8 @@ function relativeTime(iso: string | undefined): string {
       <div class="exp-entry" data-exp>
         <div class="exp-year">
           <div class="exp-year-row">
-            <span class="exp-year-num">2023</span>
-            <span class="exp-year-month">Mar</span>
+            <span class="exp-year-num">2025</span>
+            <span class="exp-year-month">Jan</span>
           </div>
           <span class="exp-year-label exp-year-now">— hoje</span>
         </div>
@@ -309,10 +306,10 @@ function relativeTime(iso: string | undefined): string {
         <div class="exp-card">
           <div class="exp-card-glow"></div>
           <div class="exp-card-top">
-            <div class="exp-role">Senior Software Engineer</div>
+            <div class="exp-role">Engenheiro Plataforma Junior</div>
             <div class="exp-company-name">Empresa Atual</div>
           </div>
-          <p class="exp-desc">Liderança técnica em projetos críticos de infraestrutura, arquitetura de sistemas distribuídos e mentoria de equipe.</p>
+          <p class="exp-desc">Atuação na Comunidade Cloud do Itaú Unibanco, na squad de Experiência de Plataforma, com foco na modernização do ecossistema cloud por meio de soluções de plataforma. Responsabilidade pelo desenvolvimento e evolução de serviços que fortalecem a infraestrutura, promovendo padronização, escalabilidade e resiliência. Participação em definições de arquitetura e desenho de soluções, com ênfase em desacoplamento, reuso e orientação a dados. Colaboração contínua com times de engenharia para disseminação de boas práticas, melhoria da experiência de desenvolvimento e aceleração da adoção de tecnologias modernas.</p>
           <div class="exp-stack">
             <span class="exp-chip">Go</span>
             <span class="exp-chip">Kubernetes</span>
@@ -326,10 +323,10 @@ function relativeTime(iso: string | undefined): string {
       <div class="exp-entry" data-exp>
         <div class="exp-year">
           <div class="exp-year-row">
-            <span class="exp-year-num">2021</span>
-            <span class="exp-year-month">Jan</span>
+            <span class="exp-year-num">2024</span>
+            <span class="exp-year-month">Jul</span>
           </div>
-          <span class="exp-year-label">— 2023 Mar</span>
+          <span class="exp-year-label">— 2025 Jan</span>
         </div>
         <div class="exp-connector">
           <div class="exp-dot"></div>
@@ -338,15 +335,14 @@ function relativeTime(iso: string | undefined): string {
         <div class="exp-card">
           <div class="exp-card-glow"></div>
           <div class="exp-card-top">
-            <div class="exp-role">Software Engineer</div>
+            <div class="exp-role">Estagiário TI</div>
             <div class="exp-company-name">Empresa Anterior</div>
           </div>
-          <p class="exp-desc">Desenvolvimento de APIs escaláveis, otimização de performance e implementação de observabilidade com OpenTelemetry.</p>
+          <p class="exp-desc">Atuação na equipe de Tecnologia do Itaú Unibanco, com foco no monitoramento contínuo dos sistemas, garantindo estabilidade, disponibilidade e desempenho. Participação no time de monitoramento transacional do banco, com responsabilidade pela criação de visões e dados para análise e acompanhamento da monitoração dos serviços. Responsabilidade pela identificação e tratamento ágil de incidentes, contribuindo para a continuidade dos serviços e mitigação de impactos para o negócio e clientes. Realização de validações e testes de integrações, assegurando a confiabilidade das operações e a qualidade das entregas.</p>
           <div class="exp-stack">
-            <span class="exp-chip">TypeScript</span>
-            <span class="exp-chip">PostgreSQL</span>
-            <span class="exp-chip">Docker</span>
-            <span class="exp-chip">OpenTelemetry</span>
+            <span class="exp-chip">Java</span>
+            <span class="exp-chip">Spring</span>
+            <span class="exp-chip">SQL Server</span>
           </div>
         </div>
       </div>
@@ -355,10 +351,10 @@ function relativeTime(iso: string | undefined): string {
       <div class="exp-entry exp-entry-last" data-exp>
         <div class="exp-year">
           <div class="exp-year-row">
-            <span class="exp-year-num">2020</span>
-            <span class="exp-year-month">Ago</span>
+            <span class="exp-year-num">2023</span>
+            <span class="exp-year-month">Out</span>
           </div>
-          <span class="exp-year-label">— 2021 Jan</span>
+          <span class="exp-year-label">— 2024 Jul</span>
         </div>
         <div class="exp-connector">
           <div class="exp-dot"></div>
@@ -366,14 +362,13 @@ function relativeTime(iso: string | undefined): string {
         <div class="exp-card">
           <div class="exp-card-glow"></div>
           <div class="exp-card-top">
-            <div class="exp-role">Junior Developer</div>
-            <div class="exp-company-name">Primeira Empresa</div>
+            <div class="exp-role">Jovem Aprendiz - Serviços Bancários</div>
+            <div class="exp-company-name">Itaú Unibanco</div>
           </div>
-          <p class="exp-desc">Início da carreira em desenvolvimento web, aprendizado de boas práticas e primeiros projetos em produção.</p>
+          <p class="exp-desc">Atuação na rede de agências bancárias, com foco no primeiro contato com o cliente e na qualidade do atendimento. Responsável pela triagem inicial, identificando demandas e direcionando os clientes de forma ágil e assertiva. Suporte no uso dos canais de autoatendimento, como caixas eletrônicos e aplicativos mobile, contribuindo para uma melhor experiência e autonomia dos clientes.</p>
           <div class="exp-stack">
-            <span class="exp-chip">JavaScript</span>
-            <span class="exp-chip">React</span>
-            <span class="exp-chip">Node.js</span>
+            <span class="exp-chip">Comunicação</span>
+            <span class="exp-chip">Proatividade</span>
           </div>
         </div>
       </div>
@@ -389,14 +384,19 @@ function relativeTime(iso: string | undefined): string {
 
           <div class="acad-group">
             <div class="acad-group-header">
-              <span class="acad-group-label">Graduação</span>
+              <span class="acad-group-label">Formação</span>
               <div class="acad-group-line"></div>
             </div>
             <div class="acad-items">
               <div class="acad-item">
-                <div class="acad-item-name">Ciência da Computação</div>
-                <div class="acad-item-inst">Universidade XYZ</div>
-                <div class="acad-item-year">2018 — 2022</div>
+                <div class="acad-item-name">Bacharelado Sistemas de Informação</div>
+                <div class="acad-item-inst">Universidade de São Paulo (USP)</div>
+                <div class="acad-item-year">2023 — 2026</div>
+              </div>
+              <div class="acad-item">
+                <div class="acad-item-name">Ensino Médio - Integrado com Técnico em Automação Industrial</div>
+                <div class="acad-item-inst">ETEC Martin Luther King</div>
+                <div class="acad-item-year">2020 — 2022</div>
               </div>
             </div>
           </div>
@@ -408,14 +408,14 @@ function relativeTime(iso: string | undefined): string {
             </div>
             <div class="acad-items">
               <div class="acad-item">
-                <div class="acad-item-name">Certified Kubernetes Administrator</div>
-                <div class="acad-item-inst">Cloud Native Computing Foundation</div>
-                <div class="acad-item-year">2023</div>
-              </div>
-              <div class="acad-item">
                 <div class="acad-item-name">AWS Solutions Architect Associate</div>
                 <div class="acad-item-inst">Amazon Web Services</div>
-                <div class="acad-item-year">2022</div>
+                <div class="acad-item-year">2025</div>
+              </div>
+              <div class="acad-item">
+                <div class="acad-item-name">Datadog Foundation</div>
+                <div class="acad-item-inst">Datadog</div>
+                <div class="acad-item-year">2024</div>
               </div>
             </div>
           </div>
@@ -427,14 +427,9 @@ function relativeTime(iso: string | undefined): string {
             </div>
             <div class="acad-items">
               <div class="acad-item">
-                <div class="acad-item-name">Distributed Systems</div>
-                <div class="acad-item-inst">MIT OpenCourseWare</div>
-                <div class="acad-item-year">2022</div>
-              </div>
-              <div class="acad-item">
-                <div class="acad-item-name">Advanced Go Programming</div>
+                <div class="acad-item-name">Microserviços - Java, Spring, Kafka</div>
                 <div class="acad-item-inst">Udemy</div>
-                <div class="acad-item-year">2021</div>
+                <div class="acad-item-year">2024</div>
               </div>
             </div>
           </div>
